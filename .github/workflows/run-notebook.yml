@@ -31,5 +31,5 @@ jobs:
       - name: Run notebook script
         env:
           PAPERSPACE_API_KEY: ${{ secrets.PAPERSPACE_API_KEY }}
-          PAPERSPACE_NOTEBOOK_ID: rrzklo2qdq71q14
+          PAPERSPACE_NOTEBOOK_ID: nuvs395uzm
         run: python scripts/run_notebook.py
