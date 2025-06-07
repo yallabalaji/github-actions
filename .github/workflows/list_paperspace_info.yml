@@ -1,10 +1,10 @@
-name: List Paperspace Info
+name: List Machines and Notebooks
 
 on:
   workflow_dispatch:
 
 jobs:
-  list-info:
+  fetch-info:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,14 +16,23 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: Install Gradient CLI
+      - name: Install Gradient SDK
         run: pip install -U gradient
 
-      - name: Authenticate with Paperspace
-        run: gradient apiKey ${{ secrets.PAPERSPACE_API_KEY }}
+      - name: Create script to list machines and notebooks
+        run: |
+          echo "import os" > list_info.py
+          echo "from gradient.api_sdk.clients import MachinesClient, NotebooksClient" >> list_info.py
+          echo "api_key = os.getenv('PAPERSPACE_API_KEY')" >> list_info.py
+          echo "print('=== Available Machines ===')" >> list_info.py
+          echo "machines = MachinesClient(api_key=api_key).list()" >> list_info.py
+          echo "for m in machines: print(f'ID: {m.id}, Name: {m.name}, Type: {m.machine_type}, CPUs: {m.cpu_count}, GPUs: {m.gpu_count}, RAM: {m.memory_in_gb}GB')" >> list_info.py
+          echo "" >> list_info.py
+          echo "print('\\n=== Your Notebooks ===')" >> list_info.py
+          echo "notebooks = NotebooksClient(api_key=api_key).list()" >> list_info.py
+          echo "for nb in notebooks: print(f'Name: {nb.name}, ID: {nb.id}, State: {nb.state}, Project: {nb.project_handle}')" >> list_info.py
 
-      - name: List available machine types
-        run: gradient machines list
-
-      - name: List all notebooks
-        run: gradient notebooks list
+      - name: Run script
+        env:
+          PAPERSPACE_API_KEY: ${{ secrets.PAPERSPACE_API_KEY }}
+        run: python list_info.py
