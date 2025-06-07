@@ -1,14 +1,14 @@
-name: List Machines and Notebooks
+name: List Paperspace Machines and Notebooks
 
 on:
   workflow_dispatch:
 
 jobs:
-  fetch-info:
+  list-resources:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Set up Python
@@ -17,22 +17,23 @@ jobs:
           python-version: '3.9'
 
       - name: Install Gradient SDK
-        run: pip install -U gradient
+        run: pip install gradient
 
-      - name: Create script to list machines and notebooks
+      - name: Create list_info.py
         run: |
-          echo "import os" > list_info.py
-          echo "from gradient.api_sdk.clients import MachinesClient, NotebooksClient" >> list_info.py
-          echo "api_key = os.getenv('PAPERSPACE_API_KEY')" >> list_info.py
-          echo "print('=== Available Machines ===')" >> list_info.py
-          echo "machines = MachinesClient(api_key=api_key).list()" >> list_info.py
-          echo "for m in machines: print(f'ID: {m.id}, Name: {m.name}, Type: {m.machine_type}, CPUs: {m.cpu_count}, GPUs: {m.gpu_count}, RAM: {m.memory_in_gb}GB')" >> list_info.py
-          echo "" >> list_info.py
-          echo "print('\\n=== Your Notebooks ===')" >> list_info.py
-          echo "notebooks = NotebooksClient(api_key=api_key).list()" >> list_info.py
-          echo "for nb in notebooks: print(f'Name: {nb.name}, ID: {nb.id}, State: {nb.state}, Project: {nb.project_handle}')" >> list_info.py
+          echo 'import os' > list_info.py
+          echo 'from gradient.api_sdk.clients import MachinesClient, NotebooksClient' >> list_info.py
+          echo 'api_key = os.getenv("PAPERSPACE_API_KEY")' >> list_info.py
+          echo 'print("=== Available Machines ===")' >> list_info.py
+          echo 'machines = MachinesClient(api_key=api_key).list()' >> list_info.py
+          echo 'for m in machines:' >> list_info.py
+          echo '    print(f"ID: {m.id}, Name: {m.name}, CPUs: {m.cpu_count}, GPUs: {m.gpu_count}, RAM: {m.memory_in_gb}GB, Region: {m.region}")' >> list_info.py
+          echo 'print("\\n=== Your Notebooks ===")' >> list_info.py
+          echo 'notebooks = NotebooksClient(api_key=api_key).list(tags=[])' >> list_info.py
+          echo 'for nb in notebooks:' >> list_info.py
+          echo '    print(f"Name: {nb.name}, ID: {nb.id}, State: {nb.state}, Project: {nb.project_handle}")' >> list_info.py
 
-      - name: Run script
+      - name: Run list_info.py
         env:
           PAPERSPACE_API_KEY: ${{ secrets.PAPERSPACE_API_KEY }}
         run: python list_info.py
