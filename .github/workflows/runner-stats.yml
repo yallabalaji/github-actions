@@ -1,49 +1,25 @@
-name: Run Hello World on Paperspace
+name: Test Gradient Backend Connection
 
 on:
   workflow_dispatch:
-    inputs:
-      projectId:
-        description: 'Paperspace Project ID'
-        required: true
-      machineType:
-        description: 'Machine type'
-        required: true
-        default: 'C6'
-      notebookPath:
-        description: 'Notebook path in repo'
-        required: true
-        default: 'notebooks/hello_world.ipynb'
 
 jobs:
-  run-job:
+  check-backend:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
 
-      # Install Gradient CLI (Python)
+    steps:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
-      - name: Install Gradient CLI & papermill
-        run: |
-          pip install -U gradient papermill
+      - name: Install Gradient CLI
+        run: pip install -U gradient
 
-      # Authenticate
-      - name: Configure API key
+      - name: Authenticate with Paperspace
         env:
           PS_API_KEY: ${{ secrets.PAPERSPACE_API_KEY }}
         run: gradient apiKey $PS_API_KEY
 
-      # Submit the Paperspace Job
-      - name: Create Paperspace Job
-        run: |
-          gradient jobs create \
-            --projectId ${{ github.event.inputs.projectId }} \
-            --machineType ${{ github.event.inputs.machineType }} \
-            --container python:3.9-slim \
-            --name "hello-world-notebook" \
-            --workspace "." \
-            --command "pip install papermill && papermill ${{ github.event.inputs.notebookPath }} output.ipynb"
+      - name: List Projects
+        run: gradient projects list
