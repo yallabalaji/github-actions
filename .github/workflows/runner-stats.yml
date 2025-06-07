@@ -1,26 +1,35 @@
-name: Runner System Stats
+name: Run Hello World on Paperspace
 
-on: [push]
+on:
+  workflow_dispatch:
 
 jobs:
-  runner-info:
+  run-job:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Print OS info
-        run: uname -a
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Print CPU info
-        run: lscpu | grep 'Model name\|CPU(s)'
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
 
-      - name: Print Memory info
-        run: free -h
+      - name: Install papermill
+        run: pip install papermill
 
-      - name: Print Disk info
-        run: df -h /
+      - name: Install gradient CLI
+        run: npm install -g @paperspace/gradient-cli
 
-      - name: Network Speed Test
+      - name: Authenticate with Paperspace
+        run: gradient login --key ${{ secrets.PAPERSPACE_API_KEY }}
+
+      - name: Submit job to Paperspace
         run: |
-          sudo apt-get update
-          sudo apt-get install -y speedtest-cli
-          speedtest-cli --simple
+          gradient jobs create \
+            --projectId YOUR_PROJECT_ID \
+            --machineType C6 \
+            --container python:3.9 \
+            --workspace "." \
+            --command "pip install papermill && papermill notebooks/hello_world.ipynb output.ipynb"
