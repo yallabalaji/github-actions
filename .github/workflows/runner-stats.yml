@@ -29,10 +29,9 @@ jobs:
         run: |
           pip install gradient-sdk papermill
 
-      - name: Run notebook on Paperspace using SDK
-        env:
-          PS_API_KEY: ${{ secrets.PAPERSPACE_API_KEY }}
-          NOTEBOOK_PATH: ${{ github.event.inputs.notebookPath }}
-          PROJECT_ID: ${{ github.event.inputs.projectId }}
+      
+      - name: Print inputs
         run: |
-          python .github/scripts/run_notebook.py
+          echo "Notebook path: ${{ github.event.inputs.notebookPath }}"
+          echo "Project ID: ${{ github.event.inputs.projectId }}"
+
