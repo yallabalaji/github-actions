@@ -1,0 +1,65 @@
+name: Run Notebook on Paperspace
+
+on:
+  workflow_dispatch:
+    inputs:
+      notebookPath:
+        description: 'Path to notebook in repo (not used in SDK script)'
+        required: true
+        default: 'notebooks/hello_world.ipynb'
+      projectId:
+        description: 'Paperspace Project ID (not used in SDK script)'
+        required: true
+        default: 'pauavo5rvcp'
+
+jobs:
+  run-notebook:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Gradient SDK
+        run: pip install gradient
+
+      - name: Run Notebook on Paperspace using SDK
+        env:
+          PAPERSPACE_API_KEY: ${{ secrets.PAPERSPACE_API_KEY }}
+          PAPERSPACE_NOTEBOOK_ID: rrzklo2qdq71q14
+        run: |
+          echo "Creating runner script..."
+          echo '
+          import os
+          import time
+          from gradient.api_sdk.clients import NotebooksClient
+
+          API_KEY = os.getenv("PAPERSPACE_API_KEY")
+          NOTEBOOK_ID = os.getenv("PAPERSPACE_NOTEBOOK_ID")
+
+          def main():
+              client = NotebooksClient(api_key=API_KEY)
+              notebook_id = client.start(id=NOTEBOOK_ID)
+              print(f"Started notebook with ID: {notebook_id}")
+
+              for _ in range(20):
+                  notebook = client.get(notebook_id)
+                  print(f"Notebook state: {notebook.state}")
+                  if notebook.state == "Stopped":
+                      print("Notebook run finished.")
+                      break
+                  time.sleep(15)
+              else:
+                  print("Notebook run did not finish within timeout.")
+
+          if __name__ == "__main__":
+              main()
+          ' > run_sdk_notebook.py
+
+          echo "Running notebook via SDK..."
+          python run_sdk_notebook.py
