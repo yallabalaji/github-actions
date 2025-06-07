@@ -1,0 +1,26 @@
+name: Runner System Stats
+
+on: [push]
+
+jobs:
+  runner-info:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Print OS info
+        run: uname -a
+
+      - name: Print CPU info
+        run: lscpu | grep 'Model name\|CPU(s)'
+
+      - name: Print Memory info
+        run: free -h
+
+      - name: Print Disk info
+        run: df -h /
+
+      - name: Network Speed Test
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y speedtest-cli
+          speedtest-cli --simple
