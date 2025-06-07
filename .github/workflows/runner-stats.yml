@@ -1,25 +1,47 @@
-name: Test Gradient Backend Connection
+name: Run Notebook on Paperspace
 
 on:
   workflow_dispatch:
+    inputs:
+      notebookPath:
+        description: 'Path to notebook in repo'
+        required: true
+        default: 'notebooks/hello_world.ipynb'
+      projectId:
+        description: 'Paperspace Project ID'
+        required: true
+        default: 'pauavo5rvcp'
 
 jobs:
-  check-backend:
+  run-notebook:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
-      - name: Install Gradient CLI
-        run: pip install -U gradient
+      - name: Install Gradient CLI and papermill
+        run: pip install -U gradient papermill
 
       - name: Authenticate with Paperspace
         env:
           PS_API_KEY: ${{ secrets.PAPERSPACE_API_KEY }}
         run: gradient apiKey $PS_API_KEY
 
-      - name: List Projects
-        run: gradient projects list
+      - name: Create Paperspace Job and Run Notebook
+        env:
+          NOTEBOOK_PATH: ${{ github.event.inputs.notebookPath }}
+          PROJECT_ID: ${{ github.event.inputs.projectId }}
+        run: |
+          gradient jobs create \
+            --projectId $PROJECT_ID \
+            --machineType C6 \
+            --container python:3.9 \
+            --workspace . \
+            --name "GitHub Notebook Runner" \
+            --command "pip install papermill && papermill $NOTEBOOK_PATH output.ipynb"
