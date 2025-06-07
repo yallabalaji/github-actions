@@ -1,0 +1,29 @@
+name: List Paperspace Info
+
+on:
+  workflow_dispatch:
+
+jobs:
+  list-info:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Gradient CLI
+        run: pip install -U gradient
+
+      - name: Authenticate with Paperspace
+        run: gradient apiKey ${{ secrets.PAPERSPACE_API_KEY }}
+
+      - name: List available machine types
+        run: gradient machines list
+
+      - name: List all notebooks
+        run: gradient notebooks list
