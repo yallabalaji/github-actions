@@ -28,7 +28,7 @@ jobs:
       - name: Submit job to Paperspace
         run: |
           gradient jobs create \
-            --projectId YOUR_PROJECT_ID \
+            --projectId pauavo5rvcp \
             --machineType C6 \
             --container python:3.9 \
             --workspace "." \
